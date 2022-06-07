@@ -27,6 +27,8 @@ namespace Tools
 
             filePath = Path.Combine(path, "data.json");
 
+            data = new DataModel();
+
             if (File.Exists(filePath))
             {
                 data = JsonConvert.DeserializeObject<DataModel>(File.ReadAllText(filePath));
