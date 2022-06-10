@@ -193,11 +193,6 @@ namespace Tools
                     }
                     else
                     {
-
-                        if (prefix == "ServicesBusSetting")
-                        {
-                            int a = 0;
-                        }
                         var List1 = _text1.Split(new char[] { ',', ';' }).Select((value1, index) => new { value1, index }).ToList();
                         var List2 = _text2.Split(new char[] { ',', ';' }).Select((value2, index) => new { value2, index }).ToList();
 
