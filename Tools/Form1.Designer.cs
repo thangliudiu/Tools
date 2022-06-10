@@ -68,7 +68,7 @@ namespace Tools
             this.richTextBox1.Location = new System.Drawing.Point(714, 35);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ScrollBars = System.Windows.Forms.RichTextBoxScrollBars.ForcedBoth;
-            this.richTextBox1.Size = new System.Drawing.Size(769, 690);
+            this.richTextBox1.Size = new System.Drawing.Size(1089, 690);
             this.richTextBox1.TabIndex = 4;
             this.richTextBox1.Text = "";
             this.richTextBox1.WordWrap = false;
@@ -91,7 +91,8 @@ namespace Tools
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1495, 791);
+            this.AutoSize = true;
+            this.ClientSize = new System.Drawing.Size(1828, 791);
             this.Controls.Add(this.tb_Target);
             this.Controls.Add(this.tb_Source);
             this.Controls.Add(this.richTextBox1);
