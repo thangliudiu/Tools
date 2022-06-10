@@ -171,8 +171,11 @@ namespace Tools
                         richTextBox1.Text += difference + "\n";
                     }
 
-                    foreach (var subSourceProperty in target.Keys)
+                    foreach (var subSourceProperty in source.Keys)
                     {
+                        if (!target.ContainsKey(subSourceProperty)) continue;
+                        if (!target.Keys.Any(x => x.Equals(subSourceProperty, StringComparison.OrdinalIgnoreCase))) continue;
+
                         source.TryGetValue(subSourceProperty, out object subObj1);
                         target.TryGetValue(subSourceProperty, out object subObj2);
 
@@ -235,6 +238,7 @@ namespace Tools
                                 for (int i = 0; i < List1.Count() && i < item.word1.index; i++)
                                 {
                                     _index += List1[i].value1?.Length ?? 0;
+                                    _index += 1;
                                 }
 
                                 diffs.Add(new Diff(index1 + _index, item.word1.value1));
@@ -246,6 +250,7 @@ namespace Tools
                                 for (int i = 0; i < List2.Count() && i < item.word2.index; i++)
                                 {
                                     _index += List2[i].value2?.Length ?? 0;
+                                    _index += 1;
                                 }
 
                                 diffs.Add(new Diff(index2 + _index, item.word2.value2));
@@ -294,6 +299,24 @@ namespace Tools
                 Text = text;
                 Length = text.Length;
             }
+        }
+
+        private void btn_Switch_Click(object sender, EventArgs e)
+        {
+            var text1 = rtx_Source.Text;
+            var text2 = rtx_Target.Text;
+
+            rtx_Source.Text = text2;
+            rtx_Target.Text = text1;
+
+            var enviroment1 = tb_Source.Text;
+            var enviroment2 = tb_Target.Text;
+
+            tb_Source.Text = enviroment2;
+            tb_Target.Text = enviroment1;
+
+            richTextBox1.Clear();
+            diffs = new List<Diff>();
         }
     }
 }
