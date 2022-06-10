@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace Tools
@@ -15,10 +16,18 @@ namespace Tools
         private readonly string path;
         private readonly string filePath;
         private readonly DataModel data;
-        private readonly List<int> diff;
+        //  private readonly List<int> diff;
+        private List<Diff> diffs;
+        private Color currentTextColor;
+        private Color currentBackColor;
+
         public Form1()
         {
             InitializeComponent();
+
+            currentBackColor = richTextBox1.BackColor;
+
+            currentTextColor = richTextBox1.SelectionColor;
 
             path = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -26,7 +35,7 @@ namespace Tools
 
             data = new DataModel();
 
-            diff = new List<int>();
+            diffs = new List<Diff>();
 
             if (File.Exists(filePath))
             {
@@ -46,7 +55,9 @@ namespace Tools
 
         private void button1_Click(object sender, EventArgs e)
         {
-            richTextBox1.Text = "";
+            richTextBox1.Clear();
+            diffs = new List<Diff>();
+
             var text1 = rtx_Source.Text;
             var text2 = rtx_Target.Text;
 
@@ -61,6 +72,8 @@ namespace Tools
             foreach (var sourceProperty in source.Keys)
             {
                 if (target.ContainsKey(sourceProperty)) continue;
+
+                if (target.Keys.Any(x => x.Equals(sourceProperty, StringComparison.OrdinalIgnoreCase))) continue;
 
                 richTextBox1.Text += $"Miss From Source: {sourceProperty}\n";
             }
@@ -82,9 +95,11 @@ namespace Tools
                 ChangeColor(richTextBox1, "Target:", Color.Blue);
                 ChangeColor(richTextBox1, "Difference", Color.Red);
                 //ChangeColor(richTextBox1, "Warring:", Color.Orange);
-                ChangeColor(richTextBox1, "Miss From Source: ", Color.Blue);
+                ChangeColor(richTextBox1, "Miss From Source: ", Color.Red);
 
-                ShowChangeText(richTextBox1, diff, Color.LightGray);
+
+                Thread.Sleep(10);
+                ShowChangeText(richTextBox1, diffs, Color.LightGray);
             }
 
             data.EnviromentSource = tb_Source.Text;
@@ -95,13 +110,13 @@ namespace Tools
             File.WriteAllText(filePath, JsonConvert.SerializeObject(data));
         }
 
-        public static void ShowChangeText(RichTextBox box, List<int> diffs, Color color)
+        public static void ShowChangeText(RichTextBox box, List<Diff> diffs, Color color)
         {
-            foreach (var index in diffs)
+            foreach (var diff in diffs)
             {
-                box.SelectionStart = index;
+                box.SelectionStart = diff.Index;
 
-                box.SelectionLength = 1;
+                box.SelectionLength = diff.Length;
 
                 box.SelectionBackColor = color;
             }
@@ -136,7 +151,7 @@ namespace Tools
                     var source = JsonConvert.DeserializeObject<Dictionary<string, object>>(_text1);
                     var target = JsonConvert.DeserializeObject<Dictionary<string, object>>(_text2);
 
-                    string difference = $"Difference: {prefix.ToUpper()} {sourceProperty.ToUpper()}\n";
+                    string difference = $"Difference: {prefix} {sourceProperty}\n";
 
                     bool isDifference = false;
 
@@ -144,16 +159,19 @@ namespace Tools
                     {
                         if (target.ContainsKey(subSourceProperty)) continue;
 
+                        if (target.Keys.Any(x => x.Equals(sourceProperty, StringComparison.OrdinalIgnoreCase))) continue;
+
                         isDifference = true;
 
                         difference += $"Miss From Source: {subSourceProperty}\n";
                     }
+
                     if (isDifference)
                     {
                         richTextBox1.Text += difference + "\n";
                     }
 
-                    foreach (var subSourceProperty in source.Keys)
+                    foreach (var subSourceProperty in target.Keys)
                     {
                         source.TryGetValue(subSourceProperty, out object subObj1);
                         target.TryGetValue(subSourceProperty, out object subObj2);
@@ -187,8 +205,8 @@ namespace Tools
 
                             if (letter1 == letter2) continue;
 
-                            diff.Add(index1 + i);
-                            diff.Add(index2 + i);
+                            diffs.Add(new Diff(index1 + i, letter1.ToString()));
+                            diffs.Add(new Diff(index2 + i, letter2.ToString()));
                         }
                     }
                     else
@@ -211,7 +229,7 @@ namespace Tools
 
                         foreach (var item in fulldifference)
                         {
-                            if (item.word1 != null)
+                            if (item.word1 != null && item.word1.value1 != null)
                             {
                                 int _index = 0;
                                 for (int i = 0; i < List1.Count() && i < item.word1.index; i++)
@@ -219,13 +237,10 @@ namespace Tools
                                     _index += List1[i].value1?.Length ?? 0;
                                 }
 
-                                for (int i = 0; i < item.word1.value1?.Length; i++)
-                                {
-                                    diff.Add(index1 + _index + i);
-                                }
+                                diffs.Add(new Diff(index1 + _index, item.word1.value1));
                             }
 
-                            if (item.word2 != null)
+                            if (item.word2 != null & item.word2.value2 != null)
                             {
                                 int _index = 0;
                                 for (int i = 0; i < List2.Count() && i < item.word2.index; i++)
@@ -233,10 +248,7 @@ namespace Tools
                                     _index += List2[i].value2?.Length ?? 0;
                                 }
 
-                                for (int i = 0; i < item.word2.value2?.Length; i++)
-                                {
-                                    diff.Add(index2 + _index + i);
-                                }
+                                diffs.Add(new Diff(index2 + _index, item.word2.value2));
                             }
                             break;
                         }
@@ -266,6 +278,22 @@ namespace Tools
             public string EnviromentTarget { get; set; }
             public string Target { get; set; }
             public string Source { get; set; }
+        }
+
+        public class Diff
+        {
+            public string Text { get; set; }
+
+            public int Index { get; set; }
+
+            public int Length { get; set; }
+
+            public Diff(int index, string text)
+            {
+                Index = index;
+                Text = text;
+                Length = text.Length;
+            }
         }
     }
 }
