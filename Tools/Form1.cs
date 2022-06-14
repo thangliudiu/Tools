@@ -16,18 +16,11 @@ namespace Tools
         private readonly string path;
         private readonly string filePath;
         private readonly DataModel data;
-        //  private readonly List<int> diff;
         private List<Diff> diffs;
-        private Color currentTextColor;
-        private Color currentBackColor;
 
         public Form1()
         {
             InitializeComponent();
-
-            currentBackColor = richTextBox1.BackColor;
-
-            currentTextColor = richTextBox1.SelectionColor;
 
             path = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -214,8 +207,8 @@ namespace Tools
                     }
                     else
                     {
-                        var List1 = _text1.Split(new char[] { ',', ';' }).Select((value1, index) => new { value1, index }).ToList();
-                        var List2 = _text2.Split(new char[] { ',', ';' }).Select((value2, index) => new { value2, index }).ToList();
+                        var List1 = _text1.Split(new char[] { ',', ';', '=' }).Select((value1, index) => new { value1, index }).ToList();
+                        var List2 = _text2.Split(new char[] { ',', ';', '=' }).Select((value2, index) => new { value2, index }).ToList();
 
                         var leftdifference = from word1 in List1
                                              from word2 in List2.Where(word2 => word1.index == word2.index).DefaultIfEmpty()
@@ -244,7 +237,7 @@ namespace Tools
                                 diffs.Add(new Diff(index1 + _index, item.word1.value1));
                             }
 
-                            if (item.word2 != null & item.word2.value2 != null)
+                            if (item?.word2 != null & item?.word2?.value2 != null)
                             {
                                 int _index = 0;
                                 for (int i = 0; i < List2.Count() && i < item.word2.index; i++)
@@ -255,7 +248,7 @@ namespace Tools
 
                                 diffs.Add(new Diff(index2 + _index, item.word2.value2));
                             }
-                            break;
+                            // break;
                         }
 
                     }
@@ -315,8 +308,7 @@ namespace Tools
             tb_Source.Text = enviroment2;
             tb_Target.Text = enviroment1;
 
-            richTextBox1.Clear();
-            diffs = new List<Diff>();
+            button1.PerformClick();
         }
     }
 }
